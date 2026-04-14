@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT패스 (물리치료 국가고시 준비)</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i data-lucide="activity"></i>
+                <span>PT패스</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active" data-path="home"><i data-lucide="home"></i> 홈</a></li>
+                <li><a href="#quiz" class="nav-link" data-path="quiz"><i data-lucide="book-open"></i> 기출문제 풀기</a></li>
+                <li><a href="#vocabulary" class="nav-link" data-path="vocabulary"><i data-lucide="layers"></i> 단어 학습</a></li>
+                <li><a href="#review" class="nav-link" data-path="review"><i data-lucide="edit-3"></i> 오답노트</a></li>
+                <li><a href="#analytics" class="nav-link" data-path="analytics"><i data-lucide="bar-chart-2"></i> 성적분석</a></li>
+                <li><a href="#simulation" class="nav-link" data-path="simulation"><i data-lucide="play-circle"></i> V-임상실습</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="container">
+            <!-- Content gets injected here by router -->
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
