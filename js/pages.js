@@ -40,6 +40,50 @@ window.appPages = {
         }
     },
 
+    renderStudyCenter(container) {
+        container.innerHTML = `
+            <div style="animation: fadeIn 0.3s;">
+                <h2 class="text-primary mb-4" style="text-align: center; margin-top: 1rem;">📖 학습 센터</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">원하는 학습 모드를 선택하세요.</p>
+                <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                    <div class="card stat-card" style="cursor: pointer; transition: transform 0.2s; text-align: center;" onclick="window.appRouter.navigate('quiz')">
+                        <i data-lucide="book-open" style="width: 48px; height: 48px; color: var(--primary-blue); margin-bottom: 1rem; display: inline-block;"></i>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">기출 모의고사</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">실전처럼 30문항을 풀어보며<br>실력을 점검하세요.</p>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer; transition: transform 0.2s; text-align: center;" onclick="window.appRouter.navigate('vocabulary')">
+                        <i data-lucide="layers" style="width: 48px; height: 48px; color: var(--primary-dark); margin-bottom: 1rem; display: inline-block;"></i>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">필수 단어장</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">필수 의학 용어를 플래시카드로<br>무한 반복 학습합니다.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+    },
+
+    renderRecords(container) {
+        container.innerHTML = `
+            <div style="animation: fadeIn 0.3s;">
+                <h2 class="text-primary mb-4" style="text-align: center; margin-top: 1rem;">📊 내 기록</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">학습 성과를 분석하고 취약점을 보완하세요.</p>
+                <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                    <div class="card stat-card" style="cursor: pointer; transition: transform 0.2s; text-align: center;" onclick="window.appRouter.navigate('analytics')">
+                        <i data-lucide="bar-chart-2" style="width: 48px; height: 48px; color: var(--success); margin-bottom: 1rem; display: inline-block;"></i>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">성적 분석</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">과목별 정답률과<br>학습 진행률을 확인합니다.</p>
+                    </div>
+                    <div class="card stat-card" style="cursor: pointer; transition: transform 0.2s; text-align: center;" onclick="window.appRouter.navigate('review')">
+                        <i data-lucide="edit-3" style="width: 48px; height: 48px; color: #f59e0b; margin-bottom: 1rem; display: inline-block;"></i>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">오답 노트</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">틀렸던 기출문제들을 모아서<br>다시 풀어볼 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+    },
+
     renderQuiz(container) {
         let currentIndex = 0;
         let selectedIndex = null;
@@ -257,36 +301,25 @@ window.appPages = {
         let isFlipped = false;
         let displayVocab = [];
         let failedAttempts = 0;
+        let hasSeenAnswer = false;
         
         const renderHeader = () => {
+            // 무한 반복 학습 모드: 아직 맞히지 못한 단어만 계속 보여줍니다.
             const knownWords = window.appStorage.getKnownWords();
-            const wrongWords = window.appStorage.getWrongWords();
-            
-            if (viewMode === 'unknown') {
-                displayVocab = vocab.filter(v => !knownWords.includes(v.term));
-            } else if (viewMode === 'wrong') {
-                displayVocab = vocab.filter(v => wrongWords.includes(v.term));
-            } else {
-                displayVocab = vocab;
-            }
+            displayVocab = vocab.filter(v => !knownWords.includes(v.term));
             
             let headerHtml = `
                 <div style="margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
                     <h2 style="color: var(--primary-dark); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i data-lucide="layers" style="width: 28px; height: 28px;"></i> 집중 단어 학습
+                        <i data-lucide="layers" style="width: 28px; height: 28px;"></i> 무한 반복 단어 학습
                     </h2>
-                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <button class="btn ${viewMode === 'all' ? '' : 'btn-secondary'} btn-sm" onclick="document.getElementById('set-view-all').click()" style="${viewMode === 'all' ? 'background: var(--primary-dark);' : ''}">
-                             전체 단어
-                        </button>
-                        <button class="btn ${viewMode === 'unknown' ? '' : 'btn-secondary'} btn-sm" onclick="document.getElementById('set-view-unknown').click()" style="${viewMode === 'unknown' ? 'background: var(--danger);' : ''}">
-                             미암기 집중
-                        </button>
-                        <button class="btn ${viewMode === 'wrong' ? '' : 'btn-secondary'} btn-sm" onclick="document.getElementById('set-view-wrong').click()" style="${viewMode === 'wrong' ? 'background: #f59e0b; color: white;' : ''}">
-                             오답 집중
-                        </button>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">틀리거나 힌트를 본 단어는 모두 맞출 때까지 계속 반복해서 등장합니다!</p>
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
                         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('shuffle-vocab-btn').click()">
-                             <i data-lucide="shuffle"></i> 셔플
+                             <i data-lucide="shuffle"></i> 남은 단어 셔플
+                        </button>
+                        <button class="btn btn-sm" style="background: #f43f5e; color: white; border: none;" onclick="if(confirm('학습 기록을 완전히 초기화하고 모든 단어를 처음부터 다시 학습하시겠습니까?')) { window.appStorage.set('pt_exam_known_words', []); window.appPages.renderVocabulary(document.getElementById('main-content')); }">
+                             <i data-lucide="rotate-ccw"></i> 처음부터 다시 시작
                         </button>
                     </div>
                 </div>
@@ -295,19 +328,12 @@ window.appPages = {
         };
 
         const renderCardArea = () => {
-            const knownWords = window.appStorage.getKnownWords();
             if (displayVocab.length === 0) {
-                let emptyMsg = "모든 단어를 마스터했습니다!";
-                let emptyDesc = "훌륭합니다! 상단에서 전체 모드로 복습하세요.";
-                if (viewMode === 'wrong') {
-                    emptyMsg = "3회 이상 틀린 단어가 없습니다!";
-                    emptyDesc = "아주 훌륭하게 학습하고 계십니다!";
-                }
                 return `
-                    <div class="empty-state">
-                        <i data-lucide="check-circle" style="color: var(--success); width: 64px; height: 64px;"></i>
-                        <h2 style="margin-top: 1rem;">${emptyMsg}</h2>
-                        <p>${emptyDesc}</p>
+                    <div class="empty-state" style="animation: fadeIn 0.5s;">
+                        <span style="font-size: 4rem; display: block; margin-bottom: 1rem;">🎉</span>
+                        <h2 style="margin-top: 1rem; color: var(--success);">모든 단어를 완벽하게 외웠습니다!</h2>
+                        <p>정말 훌륭합니다! 이제 다른 학습을 진행하거나, 상단의 초기화 버튼을 눌러 다시 복습해보세요.</p>
                     </div>`;
             }
 
@@ -373,9 +399,6 @@ window.appPages = {
                     ${renderCardArea()}
                 </div>
                 <!-- Hidden buttons -->
-                <button id="set-view-all" style="display:none;"></button>
-                <button id="set-view-unknown" style="display:none;"></button>
-                <button id="set-view-wrong" style="display:none;"></button>
                 <button id="shuffle-vocab-btn" style="display:none;"></button>
                 <button id="flip-btn" style="display:none;"></button>
                 <button id="prev-vocab-btn" style="display:none;"></button>
@@ -389,19 +412,17 @@ window.appPages = {
                     if (el) el.onclick = fn;
                 };
 
-                safeAdd('set-view-all', () => { viewMode = 'all'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
-                safeAdd('set-view-unknown', () => { viewMode = 'unknown'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
-                safeAdd('set-view-wrong', () => { viewMode = 'wrong'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
                 safeAdd('shuffle-vocab-btn', () => {
                     for (let i = vocab.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [vocab[i], vocab[j]] = [vocab[j], vocab[i]];
                     }
-                    currentIndex = 0; isFlipped = false; failedAttempts = 0; render();
+                    currentIndex = 0; isFlipped = false; failedAttempts = 0; hasSeenAnswer = false; render();
                 });
                 
                 safeAdd('flip-btn', () => {
                     isFlipped = !isFlipped;
+                    hasSeenAnswer = true;
                     const card = container.querySelector('#main-flashcard');
                     if (card) {
                         if (isFlipped) card.classList.add('flipped');
@@ -416,13 +437,28 @@ window.appPages = {
                         setTimeout(() => {
                             isFlipped = false;
                             failedAttempts = 0;
+                            hasSeenAnswer = false;
                             
-                            if (direction === -1) {
-                                currentIndex--;
+                            const currentTerm = displayVocab[currentIndex]?.term;
+                            
+                            // 학습한 단어를 반영하여 리스트 새로고침
+                            const knownWords = window.appStorage.getKnownWords();
+                            displayVocab = vocab.filter(v => !knownWords.includes(v.term));
+                            
+                            if (displayVocab.length > 0) {
+                                // 방금 풀었던 단어가 여전히 리스트에 있다면 (틀렸거나 힌트를 봄)
+                                if (displayVocab.some(v => v.term === currentTerm)) {
+                                    if (direction === -1) {
+                                        currentIndex--;
+                                    } else {
+                                        currentIndex++;
+                                    }
+                                }
+                                // 배열 범위 보정 (루프)
                                 if (currentIndex < 0) currentIndex = displayVocab.length - 1;
-                            } else {
-                                currentIndex++;
                                 if (currentIndex >= displayVocab.length) currentIndex = 0;
+                            } else {
+                                currentIndex = 0;
                             }
                             
                             const area = container.querySelector('#vocab-content-area');
@@ -459,16 +495,35 @@ window.appPages = {
                     
                     feedback.style.opacity = '1';
                     if (val === term) {
-                        input.style.borderColor = 'var(--success)';
-                        input.style.backgroundColor = '#ecfdf5';
-                        input.style.color = 'var(--success)';
-                        feedback.style.color = 'var(--success)';
-                        feedback.innerHTML = '<i data-lucide="check-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 정답입니다!';
-                        if (window.lucide) window.lucide.createIcons();
-                        input.blur();
                         const currentTerm = displayVocab[currentIndex].term;
-                        window.appStorage.addKnownWord(currentTerm); // 자동으로 암기완료 처리 (미암기 모드 동기화)
-                        window.appStorage.removeWrongWord(currentTerm); // 정답을 맞히면 오답노트에서 제거
+                        if (hasSeenAnswer) {
+                            input.style.borderColor = 'var(--danger)';
+                            input.style.backgroundColor = '#fef2f2';
+                            input.style.color = 'var(--danger)';
+                            feedback.style.color = 'var(--danger)';
+                            feedback.innerHTML = '<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 정답을 보고 맞혔으므로 나중에 다시 출제됩니다.';
+                            if (window.lucide) window.lucide.createIcons();
+                            input.blur();
+                            
+                            setTimeout(() => {
+                                const nextBtn = document.getElementById('next-vocab-btn');
+                                if (nextBtn) nextBtn.click();
+                            }, 1500);
+                        } else {
+                            input.style.borderColor = 'var(--success)';
+                            input.style.backgroundColor = '#ecfdf5';
+                            input.style.color = 'var(--success)';
+                            feedback.style.color = 'var(--success)';
+                            feedback.innerHTML = '<i data-lucide="check-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 정답입니다!';
+                            if (window.lucide) window.lucide.createIcons();
+                            input.blur();
+                            window.appStorage.addKnownWord(currentTerm);
+                            
+                            setTimeout(() => {
+                                const nextBtn = document.getElementById('next-vocab-btn');
+                                if (nextBtn) nextBtn.click();
+                            }, 1000);
+                        }
                     } else if (val === '') {
                         feedback.style.color = 'var(--text-muted)';
                         feedback.innerText = '단어를 입력해주세요.';
@@ -479,8 +534,7 @@ window.appPages = {
                         feedback.style.color = 'var(--danger)';
                         
                         if (failedAttempts >= 3) {
-                            window.appStorage.addWrongWord(displayVocab[currentIndex].term); // 오답노트에 추가
-                            feedback.innerHTML = '<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 3회 오답! 오답노트에 기록되었습니다.';
+                            feedback.innerHTML = '<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 3회 오답! 나중에 다시 출제됩니다.';
                             if (window.lucide) window.lucide.createIcons();
                             setTimeout(() => {
                                 const nextBtn = document.getElementById('next-vocab-btn');

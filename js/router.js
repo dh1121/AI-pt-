@@ -28,8 +28,17 @@ class Router {
     }
 
     updateNav(activePath) {
+        // Map sub-routes to their parent tabs for navigation highlighting
+        const routeMap = {
+            'quiz': 'study',
+            'vocabulary': 'study',
+            'review': 'records',
+            'analytics': 'records'
+        };
+        const parentPath = routeMap[activePath] || activePath;
+
         document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.dataset.path === activePath) {
+            if (link.dataset.path === parentPath) {
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
