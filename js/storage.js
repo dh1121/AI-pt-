@@ -4,7 +4,8 @@ const StorageWrapper = {
         PROGRESS: 'pt_exam_progress',
         WRONG_NOTES: 'pt_exam_wrong_notes',
         ANALYTICS: 'pt_exam_analytics',
-        KNOWN_WORDS: 'pt_exam_known_words'
+        KNOWN_WORDS: 'pt_exam_known_words',
+        WRONG_WORDS: 'pt_exam_wrong_words'
     },
 
     get(key, defaultValue = null) {
@@ -86,6 +87,24 @@ const StorageWrapper = {
         let words = this.getKnownWords();
         words = words.filter(t => t !== term);
         this.set(this.KEYS.KNOWN_WORDS, words);
+    },
+
+    getWrongWords() {
+        return this.get(this.KEYS.WRONG_WORDS, []);
+    },
+
+    addWrongWord(term) {
+        const words = this.getWrongWords();
+        if (!words.includes(term)) {
+            words.push(term);
+            this.set(this.KEYS.WRONG_WORDS, words);
+        }
+    },
+
+    removeWrongWord(term) {
+        let words = this.getWrongWords();
+        words = words.filter(t => t !== term);
+        this.set(this.KEYS.WRONG_WORDS, words);
     }
 };
 

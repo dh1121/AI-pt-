@@ -256,10 +256,19 @@ window.appPages = {
         let currentIndex = 0;
         let isFlipped = false;
         let displayVocab = [];
+        let failedAttempts = 0;
         
         const renderHeader = () => {
             const knownWords = window.appStorage.getKnownWords();
-            displayVocab = viewMode === 'unknown' ? vocab.filter(v => !knownWords.includes(v.term)) : vocab;
+            const wrongWords = window.appStorage.getWrongWords();
+            
+            if (viewMode === 'unknown') {
+                displayVocab = vocab.filter(v => !knownWords.includes(v.term));
+            } else if (viewMode === 'wrong') {
+                displayVocab = vocab.filter(v => wrongWords.includes(v.term));
+            } else {
+                displayVocab = vocab;
+            }
             
             let headerHtml = `
                 <div style="margin-bottom: 2rem; background: white; padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center;">
@@ -273,6 +282,9 @@ window.appPages = {
                         <button class="btn ${viewMode === 'unknown' ? '' : 'btn-secondary'} btn-sm" onclick="document.getElementById('set-view-unknown').click()" style="${viewMode === 'unknown' ? 'background: var(--danger);' : ''}">
                              미암기 집중
                         </button>
+                        <button class="btn ${viewMode === 'wrong' ? '' : 'btn-secondary'} btn-sm" onclick="document.getElementById('set-view-wrong').click()" style="${viewMode === 'wrong' ? 'background: #f59e0b; color: white;' : ''}">
+                             오답 집중
+                        </button>
                         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('shuffle-vocab-btn').click()">
                              <i data-lucide="shuffle"></i> 셔플
                         </button>
@@ -285,11 +297,17 @@ window.appPages = {
         const renderCardArea = () => {
             const knownWords = window.appStorage.getKnownWords();
             if (displayVocab.length === 0) {
+                let emptyMsg = "모든 단어를 마스터했습니다!";
+                let emptyDesc = "훌륭합니다! 상단에서 전체 모드로 복습하세요.";
+                if (viewMode === 'wrong') {
+                    emptyMsg = "3회 이상 틀린 단어가 없습니다!";
+                    emptyDesc = "아주 훌륭하게 학습하고 계십니다!";
+                }
                 return `
                     <div class="empty-state">
                         <i data-lucide="check-circle" style="color: var(--success); width: 64px; height: 64px;"></i>
-                        <h2 style="margin-top: 1rem;">모든 단어를 마스터했습니다!</h2>
-                        <p>훌륭합니다! 상단에서 전체 모드로 복습하세요.</p>
+                        <h2 style="margin-top: 1rem;">${emptyMsg}</h2>
+                        <p>${emptyDesc}</p>
                     </div>`;
             }
 
@@ -357,6 +375,7 @@ window.appPages = {
                 <!-- Hidden buttons -->
                 <button id="set-view-all" style="display:none;"></button>
                 <button id="set-view-unknown" style="display:none;"></button>
+                <button id="set-view-wrong" style="display:none;"></button>
                 <button id="shuffle-vocab-btn" style="display:none;"></button>
                 <button id="flip-btn" style="display:none;"></button>
                 <button id="prev-vocab-btn" style="display:none;"></button>
@@ -370,14 +389,15 @@ window.appPages = {
                     if (el) el.onclick = fn;
                 };
 
-                safeAdd('set-view-all', () => { viewMode = 'all'; currentIndex = 0; isFlipped = false; render(); });
-                safeAdd('set-view-unknown', () => { viewMode = 'unknown'; currentIndex = 0; isFlipped = false; render(); });
+                safeAdd('set-view-all', () => { viewMode = 'all'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
+                safeAdd('set-view-unknown', () => { viewMode = 'unknown'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
+                safeAdd('set-view-wrong', () => { viewMode = 'wrong'; currentIndex = 0; isFlipped = false; failedAttempts = 0; render(); });
                 safeAdd('shuffle-vocab-btn', () => {
                     for (let i = vocab.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [vocab[i], vocab[j]] = [vocab[j], vocab[i]];
                     }
-                    currentIndex = 0; isFlipped = false; render();
+                    currentIndex = 0; isFlipped = false; failedAttempts = 0; render();
                 });
                 
                 safeAdd('flip-btn', () => {
@@ -395,6 +415,7 @@ window.appPages = {
                         card.classList.add(animClass);
                         setTimeout(() => {
                             isFlipped = false;
+                            failedAttempts = 0;
                             
                             if (direction === -1) {
                                 currentIndex--;
@@ -445,16 +466,30 @@ window.appPages = {
                         feedback.innerHTML = '<i data-lucide="check-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 정답입니다!';
                         if (window.lucide) window.lucide.createIcons();
                         input.blur();
-                        window.appStorage.addKnownWord(displayVocab[currentIndex].term); // 자동으로 암기완료 처리 (미암기 모드 동기화)
+                        const currentTerm = displayVocab[currentIndex].term;
+                        window.appStorage.addKnownWord(currentTerm); // 자동으로 암기완료 처리 (미암기 모드 동기화)
+                        window.appStorage.removeWrongWord(currentTerm); // 정답을 맞히면 오답노트에서 제거
                     } else if (val === '') {
                         feedback.style.color = 'var(--text-muted)';
                         feedback.innerText = '단어를 입력해주세요.';
                     } else {
+                        failedAttempts++;
                         input.style.borderColor = 'var(--danger)';
                         input.style.backgroundColor = '#fef2f2';
                         feedback.style.color = 'var(--danger)';
-                        feedback.innerHTML = '<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 틀렸습니다. 다시 시도해보세요.';
-                        if (window.lucide) window.lucide.createIcons();
+                        
+                        if (failedAttempts >= 3) {
+                            window.appStorage.addWrongWord(displayVocab[currentIndex].term); // 오답노트에 추가
+                            feedback.innerHTML = '<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 3회 오답! 오답노트에 기록되었습니다.';
+                            if (window.lucide) window.lucide.createIcons();
+                            setTimeout(() => {
+                                const nextBtn = document.getElementById('next-vocab-btn');
+                                if (nextBtn) nextBtn.click();
+                            }, 1500);
+                        } else {
+                            feedback.innerHTML = `<i data-lucide="x-circle" style="vertical-align: text-bottom; width:20px; height:20px;"></i> 틀렸습니다. 다시 시도해보세요. (${failedAttempts}/3)`;
+                            if (window.lucide) window.lucide.createIcons();
+                        }
                     }
                 });
 
@@ -628,29 +663,18 @@ window.appPages = {
             }
 
             // Check Game Over / Clear Status
-            let impossibleToClear = false;
-            let currentMinPain = currentState.painLevel;
-            let currentMaxRom = currentState.rom;
+            // 모든 정답 처방을 완료했는지 확인
+            const allCorrectApplied = activeScenario.treatments
+                .filter(t => t.isCorrect)
+                .every(t => appliedTreatments.some(at => at.id === t.id));
 
-            if (window.simState.stage >= 3) {
-                activeScenario.treatments.forEach(t => {
-                    if (!appliedTreatments.includes(t.id) && t.isCorrect) {
-                        currentMinPain += (t.effect.pain < 0 ? t.effect.pain : 0);
-                        currentMaxRom += (t.effect.rom > 0 ? t.effect.rom : 0);
-                    }
-                });
-                if (currentMinPain > 2 || currentMaxRom < 90) {
-                    impossibleToClear = true;
-                }
-            }
-
-            const isGameOver = currentState.painLevel >= 10 || currentState.rom <= 0 || impossibleToClear;
-            const isGameClear = currentState.painLevel <= 2 && currentState.rom >= 90;
+            const isGameOver = currentState.painLevel >= 10 || currentState.rom <= 0;
+            
+            // 수치 목표를 달성했거나, 오답이 있더라도 나머지 정답을 모두 맞추면 클리어 인정
+            const isGameClear = (currentState.painLevel <= 2 && currentState.rom >= 90) || allCorrectApplied;
 
             if (isGameOver) {
-                let failMessage = impossibleToClear 
-                    ? "❌ 치명적인 판단 미스로 환자가 영구적인 손상을 입어 남은 치료로도 회복이 불가능해졌습니다. 의료 소송 위기입니다..."
-                    : "환자의 상태가 심각하게 악화되어 대학병원 응급실로 긴급 이송되었습니다...";
+                let failMessage = "환자의 상태가 심각하게 악화되어 대학병원 응급실로 긴급 이송되었습니다...";
 
                 container.innerHTML = `
                     <div class="card text-center" style="animation: fadeIn 0.5s ease-out; padding: 4rem 2rem;">
