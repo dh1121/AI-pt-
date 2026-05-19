@@ -359,8 +359,8 @@ window.appPages = {
                                 <div class="flashcard-front" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
                                     <h3 style="font-size: 1.4rem; padding: 0 1rem; line-height: 1.5; color: var(--text-main); font-weight: 600;">${v.definition}</h3>
                                     
-                                    <div style="margin-top: 2rem; width: 100%; max-width: 450px; display: flex; flex-direction: column; align-items: center;" onclick="event.stopPropagation();">
-                                        <div style="display: flex; gap: 0.5rem; width: 100%;">
+                                    <div style="margin-top: 1rem; width: 100%; max-width: 450px; display: flex; flex-direction: column; align-items: center;" onclick="event.stopPropagation();">
+                                        <div class="vocab-input-group" style="display: flex; gap: 0.5rem; width: 100%;">
                                             <input type="text" id="vocab-spell-input" class="form-control" placeholder="영어 단어를 입력하세요" autocomplete="off" autofocus style="text-align: center; font-size: 1.2rem; font-weight: bold; border: 2px solid var(--border); border-radius: 8px; padding: 0.8rem; width: 100%; transition: all 0.3s;">
                                             <button id="vocab-check-btn" class="btn" style="white-space: nowrap; padding: 0.8rem 1.5rem; border-radius: 8px;">정답 확인</button>
                                         </div>

@@ -422,16 +422,37 @@ h1, h2, h3 {
     }
 
     .flashcard {
-        height: auto;
-        min-height: 320px;
+        height: 400px; /* 고정 높이로 변경하여 3D 자식 요소 오버플로우 방지 */
+    }
+
+    .flashcard-front, .flashcard-back {
+        padding: 1rem;
     }
 
     .flashcard-front h3 {
-        font-size: 1.2rem;
+        font-size: 1.05rem;
+        line-height: 1.4;
+        margin-bottom: 0.5rem;
     }
 
     .flashcard-back p {
-        font-size: 1rem;
+        font-size: 1.3rem;
+    }
+    
+    .vocab-input-group {
+        flex-direction: column; /* 모바일에서는 위아래로 배치 */
+        gap: 0.5rem;
+    }
+
+    #vocab-spell-input {
+        font-size: 1rem !important;
+        padding: 0.6rem !important;
+    }
+    
+    #vocab-check-btn {
+        width: 100% !important;
+        padding: 0.8rem !important;
+        font-size: 1rem !important;
     }
 
     .stat-value {
