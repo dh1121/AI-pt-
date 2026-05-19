@@ -912,7 +912,7 @@ window.appPages = {
                 </div>
 
                 <div id="sim-status-board" style="background: linear-gradient(135deg, #0f172a, #334155); color: white; padding: 2rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; transition: background 0.3s, box-shadow 0.3s; border: 3px solid transparent;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                         <div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <span style="font-weight: 800; font-size: 1.2rem; text-shadow: 1px 1px 2px #000;"><i data-lucide="heart-pulse"></i> 환자 체력 (통증, 낮을수록 좋음!)</span>
