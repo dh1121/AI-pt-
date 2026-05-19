@@ -339,6 +339,7 @@ window.appPages = {
 
             if (currentIndex >= displayVocab.length) currentIndex = 0; // reset
             const v = displayVocab[currentIndex];
+            const knownWords = window.appStorage.getKnownWords();
             const isKnown = knownWords.includes(v.term);
             const progressPct = ((currentIndex + 1) / displayVocab.length) * 100;
 
