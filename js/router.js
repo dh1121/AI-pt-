@@ -33,6 +33,7 @@ class Router {
             'quiz': 'study',
             'vocabulary': 'study',
             'review': 'records',
+            'correct-review': 'records',
             'analytics': 'records'
         };
         const parentPath = routeMap[activePath] || activePath;

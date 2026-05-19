@@ -78,6 +78,11 @@ window.appPages = {
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">오답 노트</h3>
                         <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">틀렸던 기출문제들을 모아서<br>다시 풀어볼 수 있습니다.</p>
                     </div>
+                    <div class="card stat-card" style="cursor: pointer; transition: transform 0.2s; text-align: center;" onclick="window.appRouter.navigate('correct-review')">
+                        <i data-lucide="check-circle" style="width: 48px; height: 48px; color: var(--primary-blue); margin-bottom: 1rem; display: inline-block;"></i>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">정답 노트</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">맞혔던 문제들을 다시 보며<br>확실히 내 것으로 만듭니다.</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -212,6 +217,9 @@ window.appPages = {
                     
                     if (!isCorrect) {
                         window.appStorage.addWrongNote(q.id);
+                        window.appStorage.removeCorrectNote(q.id);
+                    } else {
+                        window.appStorage.addCorrectNote(q.id);
                     }
                     
                     renderCurrentQuestion();
@@ -290,6 +298,63 @@ window.appPages = {
                 // Re-render
                 window.appPages.renderReview(container);
                 if (window.lucide) window.lucide.createIcons();
+            });
+        });
+    },
+
+    renderCorrectReview(container) {
+        const correctNoteIds = window.appStorage.getCorrectNotes();
+        const allQuestions = window.appData.questions;
+        const correctQuestions = allQuestions.filter(q => correctNoteIds.includes(q.id));
+
+        if (correctQuestions.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i data-lucide="check-circle" style="display: inline-block; width: 64px; height: 64px; color: var(--border);"></i>
+                    <h2 style="margin-top: 1rem; margin-bottom: 0.5rem;">저장된 정답이 없습니다.</h2>
+                    <p>모의고사를 풀고 정답을 맞혀보세요!</p>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+            return;
+        }
+
+        let listHtml = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0; color: var(--primary-blue);">정답 노트</h2>
+                <span class="badge" style="background: var(--primary-blue); color: white;">총 ${correctQuestions.length}문항</span>
+            </div>
+        `;
+
+        correctQuestions.forEach((q) => {
+            const dummyShortAnswer = q.type === 'short-answer' ? q.correctAnswer : '';
+            
+            if (!q.shuffledOptions && q.type !== 'short-answer') {
+                 q.shuffledOptions = q.options.map((t, i) => ({ text: t, originalIndex: i }));
+            }
+
+            listHtml += `
+                <div style="margin-bottom: 2rem; position: relative;" class="review-item">
+                    ${window.appComponents.buildQuestionCard(q, null, true, dummyShortAnswer)}
+                    <div style="text-align: right; margin-top: -1.5rem; padding-right: 1.5rem; position: relative; z-index: 10;">
+                        <button class="btn btn-secondary btn-remove-correct text-sm" data-id="${q.id}" style="padding: 0.5rem 1rem; border-color: var(--border); color: var(--text-muted);">
+                            정답 노트에서 제외 <i data-lucide="x" style="width:16px;height:16px;"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = listHtml;
+        if (window.lucide) window.lucide.createIcons();
+
+        // Attach remove events
+        const removeBtns = container.querySelectorAll('.btn-remove-correct');
+        removeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                window.appStorage.removeCorrectNote(id);
+                window.appPages.renderCorrectReview(container);
             });
         });
     },

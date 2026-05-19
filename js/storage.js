@@ -3,6 +3,7 @@ const StorageWrapper = {
     KEYS: {
         PROGRESS: 'pt_exam_progress',
         WRONG_NOTES: 'pt_exam_wrong_notes',
+        CORRECT_NOTES: 'pt_exam_correct_notes',
         ANALYTICS: 'pt_exam_analytics',
         KNOWN_WORDS: 'pt_exam_known_words',
         WRONG_WORDS: 'pt_exam_wrong_words'
@@ -53,6 +54,24 @@ const StorageWrapper = {
         let notes = this.getWrongNotes();
         notes = notes.filter(id => id !== questionId);
         this.set(this.KEYS.WRONG_NOTES, notes);
+    },
+
+    getCorrectNotes() {
+        return this.get(this.KEYS.CORRECT_NOTES, []);
+    },
+
+    addCorrectNote(questionId) {
+        const notes = this.getCorrectNotes();
+        if (!notes.includes(questionId)) {
+            notes.push(questionId);
+            this.set(this.KEYS.CORRECT_NOTES, notes);
+        }
+    },
+
+    removeCorrectNote(questionId) {
+        let notes = this.getCorrectNotes();
+        notes = notes.filter(id => id !== questionId);
+        this.set(this.KEYS.CORRECT_NOTES, notes);
     },
 
     updateAnalytics(subject, isCorrect) {

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     router.addRoute('vocabulary', pages.renderVocabulary);
     router.addRoute('records', pages.renderRecords);
     router.addRoute('review', pages.renderReview);
+    router.addRoute('correct-review', pages.renderCorrectReview);
     router.addRoute('analytics', pages.renderAnalytics);
     router.addRoute('simulation', pages.renderSimulation);
 
